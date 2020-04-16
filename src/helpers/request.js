@@ -1,11 +1,11 @@
-import axios from 'axios';
-import { tokensSelector, refreshTokenRequest, logout } from '../store/auth';
-import { openNotification } from '../store/notifications';
-const baseURL = 'http://localhost:3000/api/';
-const instance = axios.create({ baseURL });
+import axios from 'axios'
+import { tokensSelector, refreshTokenRequest, logout } from '../store/auth'
+import { openNotification } from '../store/notifications'
+const baseURL = 'https://homework-loft.herokuapp.com/api/'
+const instance = axios.create({ baseURL })
 
-const waitQueue = [];
-let isRefreshDispatched = false;
+const waitQueue = []
+let isRefreshDispatched = false
 
 const request = ({
   url,
@@ -15,71 +15,67 @@ const request = ({
   isRefresh,
   isWithoutToken,
   getState = () => ({}),
-  dispatch = () => {}
+  dispatch = () => {},
 }) =>
   new Promise((resolve, reject) => {
-    
     const {
       accessToken,
       accessTokenExpiredAt,
-      refreshTokenExpiredAt
-    } = tokensSelector(getState());
+      refreshTokenExpiredAt,
+    } = tokensSelector(getState())
 
     // request handler
     const requestFunc = ({ url, method, headers, data, resolve, reject }) => {
       if (!isWithoutToken) {
-        const {
-          accessToken,
-          refreshToken,
-        } = tokensSelector(getState());
-        (headers['Authorization'] = isRefresh ? refreshToken : accessToken);
+        const { accessToken, refreshToken } = tokensSelector(getState())
+        headers['Authorization'] = isRefresh ? refreshToken : accessToken
       }
 
       return instance({ url, method, headers, data })
-        .then(response => {
-          resolve(response.data);
+        .then((response) => {
+          resolve(response.data)
         })
-        .catch(error => {
+        .catch((error) => {
           if (error.response) {
-            const status = error.response.status || 404;
-            const errorResponse = error.response.data;
-            console.group('Error from: ' + url);
-            console.info('Status: ' + status);
-            console.dir(errorResponse);
-            console.groupEnd();
+            const status = error.response.status || 404
+            const errorResponse = error.response.data
+            console.group('Error from: ' + url)
+            console.info('Status: ' + status)
+            console.dir(errorResponse)
+            console.groupEnd()
 
             switch (status) {
               case 401:
               case 403:
                 dispatch(logout())
-                return reject(errorResponse);
+                return reject(errorResponse)
               case 500:
               case 502:
               case 503:
                 dispatch(
                   openNotification({
                     variant: 'error',
-                    text: `${status}!\nSomething is wrong))`
-                  })
-                );
-                return reject({ detail: 'Unknown error' });
+                    text: `${status}!\nSomething is wrong))`,
+                  }),
+                )
+                return reject({ detail: 'Unknown error' })
               default:
-                return reject(errorResponse);
+                return reject(errorResponse)
             }
           } else {
             dispatch(
               openNotification({
                 variant: 'error',
-                text: `Error!!\n${error.message}`
-              })
-            );
-            return reject(error.message);
+                text: `Error!!\n${error.message}`,
+              }),
+            )
+            return reject(error.message)
           }
-        });
-    };
+        })
+    }
 
-    const isTokenExpired = accessTokenExpiredAt <= Date.now();
-    const isRefreshExpired = refreshTokenExpiredAt <= Date.now();
+    const isTokenExpired = accessTokenExpiredAt <= Date.now()
+    const isRefreshExpired = refreshTokenExpiredAt <= Date.now()
 
     // If should refresh token
     if (accessToken && isTokenExpired && !isRefreshExpired && !isWithoutToken) {
@@ -92,37 +88,37 @@ const request = ({
           headers,
           isRefresh,
           resolve,
-          reject
-        });
+          reject,
+        })
 
       // dispatch refresh token (first-time only!)
       if (!isRefresh && !isRefreshDispatched) {
-        isRefreshDispatched = true;
+        isRefreshDispatched = true
         dispatch(refreshTokenRequest())
           .then(() => {
-            isRefreshDispatched = false;
+            isRefreshDispatched = false
             // and after refresh - execute requests from waiting stack
-            waitQueue.forEach(config => requestFunc(config));
+            waitQueue.forEach((config) => requestFunc(config))
           })
           .catch(() => {
             // by default in error - logout user
             dispatch(logout())
             // eslint-disable-next-line
-            reject({ detail: 'Refresh token error' });
-          });
+            reject({ detail: 'Refresh token error' })
+          })
       } else if (isRefresh) {
         // if has been called refresh method
-        requestFunc({ url, method, data, headers, resolve, reject });
+        requestFunc({ url, method, data, headers, resolve, reject })
       }
     } else if (isRefreshExpired && !isWithoutToken) {
       // if refresh is expired - just logout
       dispatch(logout())
       // eslint-disable-next-line
-      reject({ detail: 'Refresh token is expired' });
+      reject({ detail: 'Refresh token is expired' })
     } else {
       // by default
-      requestFunc({ url, method, data, headers, resolve, reject });
+      requestFunc({ url, method, data, headers, resolve, reject })
     }
-  });
+  })
 
-export default request;
+export default request
