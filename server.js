@@ -4,6 +4,8 @@ const app = express()
 const http = require('http')
 const server = http.createServer(app)
 const io = require('socket.io').listen(server)
+const fs = require('fs')
+
 require('./models/connection')
 
 // parse application/json
@@ -46,6 +48,7 @@ server.listen(PORT, function () {
 })
 
 const connectedUsers = {}
+const historyMessage = {}
 
 io.on('connection', (socket) => {
   const socketId = socket.id
@@ -60,13 +63,27 @@ io.on('connection', (socket) => {
     // {senderId: '5e9483d6d96b341ba80bc28e', recipientId: '5e9483d6d96b341ba80bc28e', text: 'Hi'}
     console.log('message:add')
     console.log(data)
+    const { senderId, recipientId } = data
     socket.emit('message:add', data)
     socket.broadcast.to(data.roomId).emit('message:add', data)
+    addMessageToHistory(senderId, recipientId, data)
+    addMessageToHistory(recipientId, senderId, data)
   })
   socket.on('message:history', function (data) {
     // {recipientId: '5e9483d6d96b341ba80bc28e', userId: '5e9483d6d96b341ba80bc28e'}
     console.log('message:history')
     console.log(data)
+    console.log(historyMessage)
+    if (
+      historyMessage[data.userId] &&
+      historyMessage[data.userId][data.recipientId]
+    ) {
+      socket.emit(
+        'message:history',
+        historyMessage[data.userId][data.recipientId],
+      )
+      console.log(historyMessage[data.userId][data.recipientId])
+    }
   })
   socket.on('disconnect', function (data) {
     delete connectedUsers[socketId]
@@ -74,4 +91,18 @@ io.on('connection', (socket) => {
   })
 })
 
+const addMessageToHistory = (senderId, recipientId, data) => {
+  if (historyMessage[senderId]) {
+    if (historyMessage[senderId][recipientId]) {
+      historyMessage[senderId][recipientId].push(data)
+    } else {
+      historyMessage[senderId][recipientId] = []
+      historyMessage[senderId][recipientId].push(data)
+    }
+  } else {
+    historyMessage[senderId] = {}
+    historyMessage[senderId][recipientId] = []
+    historyMessage[senderId][recipientId].push(data)
+  }
+}
 module.exports = { app: app, server: server }
