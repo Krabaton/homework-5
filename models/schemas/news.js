@@ -4,6 +4,14 @@ const Schema = mongoose.Schema
 const newsSchema = new Schema({
   created_at: {
     type: Date,
+    get: (createdAt) => {
+      return createdAt.toLocaleDateString('ru-RU', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    },
   },
   text: {
     type: String,

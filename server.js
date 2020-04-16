@@ -1,7 +1,9 @@
 const express = require('express')
 const path = require('path')
-
 const app = express()
+const http = require('http')
+const server = http.createServer(app)
+const io = require('socket.io').listen(server)
 require('./models/connection')
 
 // parse application/json
@@ -30,15 +32,30 @@ app.use('*', (_req, res) => {
 app.use((err, _, res, __) => {
   console.log(err.stack)
   res.status(500).json({
-    statusMessage: 'Error',
-    data: { status: 500, message: err.message },
+    code: 500,
+    message: err.message,
   })
 })
 
 const PORT = process.env.PORT || 3000
 
-app.listen(PORT, function () {
+server.listen(PORT, function () {
   console.log(`Server running. Use our API on port: ${PORT}`)
+})
+
+io.on('connection', (socket) => {
+  socket.on('users:connect', function (data) {
+    console.log(data)
+  })
+  socket.on('message:add', function (data) {
+    console.log(data)
+  })
+  socket.on('message:history', function (data) {
+    console.log(data)
+  })
+  socket.on('disconnect', function (data) {
+    console.log(data)
+  })
 })
 
 module.exports = app

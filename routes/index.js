@@ -1,6 +1,5 @@
 const express = require('express')
 const router = express.Router()
-const mock = require('./mock.json')
 const tokens = require('../auth/tokens')
 const secret = require('../auth/config.json')
 const passport = require('passport')
@@ -93,37 +92,58 @@ router
     const users = await db.getUsers()
     res.json(users.map((user) => helper.serializeUser(user)))
   })
-  .patch('/users/:id/permission', auth, (req, res) => {
-    console.log(req.body)
-    const body = {
-      permission: {
-        chat: { C: true, R: true, U: true, D: true },
-        news: { C: true, R: true, U: true, D: true },
-        settings: { C: true, R: true, U: true, D: true },
-      },
+  .patch('/users/:id/permission', auth, async (req, res, next) => {
+    try {
+      const user = await db.updateUser(req.params.id, req.body)
+      res.json({
+        ...helper.serializeUser(user),
+      })
+    } catch (e) {
+      next(e)
     }
   })
-  .delete('/users/:id', auth, (req, res) => {})
+  .delete('/users/:id', auth, async (req, res) => {
+    await db.deleteUser(req.params.id)
+    res.json({})
+  })
 
 router
-  .get('/news', auth, async (req, res) => {
-    const news = await db.getNews()
-    return res.json(news.map((news) => helper.serializeNews(news)))
+  .get('/news', auth, async (req, res, next) => {
+    try {
+      const news = await db.getNews()
+      return res.json(news)
+    } catch (e) {
+      next(e)
+    }
   })
-  .post('/news', auth, async (req, res) => {
-    const token = req.headers['authorization']
-    const user = await tokens.getUserByToken(token, db, secret.secret)
-    await db.createNews(req.body, helper.serializeUser(user))
-    const news = await db.getNews()
-    res.json(news.map((news) => helper.serializeNews(news)))
+  .post('/news', auth, async (req, res, next) => {
+    try {
+      const token = req.headers['authorization']
+      const user = await tokens.getUserByToken(token, db, secret.secret)
+      await db.createNews(req.body, helper.serializeUser(user))
+      const news = await db.getNews()
+      res.json(news)
+    } catch (e) {
+      next(e)
+    }
   })
-  .patch('/news/:id', auth, (req, res) => {
-    console.log(req.body)
-    res.json(mock.news)
+  .patch('/news/:id', auth, async (req, res, next) => {
+    try {
+      await db.updateNews(req.params.id, req.body)
+      const news = await db.getNews()
+      res.json(news)
+    } catch (e) {
+      next(e)
+    }
   })
-  .delete('/news/:id', auth, (req, res) => {
-    console.log(req.body)
-    res.json(mock.news)
+  .delete('/news/:id', auth, async (req, res, next) => {
+    try {
+      await db.deleteNews(req.params.id)
+      const news = await db.getNews()
+      res.json(news)
+    } catch (e) {
+      next(e)
+    }
   })
 
 module.exports = router

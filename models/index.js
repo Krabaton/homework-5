@@ -1,6 +1,7 @@
 // const mongoose = require('mongoose')
 const User = require('./schemas/user')
 const News = require('./schemas/news')
+const helper = require('../helpers/serialize')
 
 module.exports.getUserByName = async (userName) => {
   return User.findOne({ userName })
@@ -31,11 +32,20 @@ module.exports.createUser = async (data) => {
   console.log(user)
   return user
 }
-module.exports.updateUser = () => {}
-module.exports.deleteUser = () => {}
+module.exports.updateUser = async (id, data) => {
+  return await User.findByIdAndUpdate(
+    { _id: id },
+    { $set: data },
+    { new: true },
+  )
+}
+module.exports.deleteUser = async (id) => {
+  return User.findByIdAndRemove({ _id: id })
+}
 
 module.exports.getNews = async () => {
-  return News.find()
+  const news = await News.find()
+  return news.map((news) => helper.serializeNews(news))
 }
 module.exports.createNews = async (data, user) => {
   const { title, text } = data
@@ -47,5 +57,9 @@ module.exports.createNews = async (data, user) => {
   })
   return await news.save()
 }
-module.exports.updateNews = () => {}
-module.exports.deleteNews = () => {}
+module.exports.updateNews = async (id, data) => {
+  return await News.findByIdAndUpdate({ _id: id }, { $set: data })
+}
+module.exports.deleteNews = async (id) => {
+  return News.findByIdAndRemove({ _id: id })
+}
