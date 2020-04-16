@@ -38,9 +38,9 @@
     "start-backend": "cross-env NODE_ENV=development nodemon ./server.js",
     "start": "cross-env NODE_ENV=production node server.js",
     "start-frontend": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "build-frontend": "react-scripts build",
+    "test-frontend": "react-scripts test",
+    "eject-frontend": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
