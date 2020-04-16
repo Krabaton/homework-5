@@ -91,7 +91,6 @@ router
 router
   .get('/users', auth, async (req, res) => {
     const users = await db.getUsers()
-    // TODO: refactor on serialization
     res.json(users.map((user) => helper.serializeUser(user)))
   })
   .patch('/users/:id/permission', auth, (req, res) => {
@@ -107,13 +106,16 @@ router
   .delete('/users/:id', auth, (req, res) => {})
 
 router
-  .get('/news', auth, (req, res) => {
-    console.log('NEWS:')
-    res.json(mock.news)
+  .get('/news', auth, async (req, res) => {
+    const news = await db.getNews()
+    return res.json(news.map((news) => helper.serializeNews(news)))
   })
-  .post('/news', auth, (req, res) => {
-    console.log(req.body)
-    res.json(mock.news)
+  .post('/news', auth, async (req, res) => {
+    const token = req.headers['authorization']
+    const user = await tokens.getUserByToken(token, db, secret.secret)
+    await db.createNews(req.body, helper.serializeUser(user))
+    const news = await db.getNews()
+    res.json(news.map((news) => helper.serializeNews(news)))
   })
   .patch('/news/:id', auth, (req, res) => {
     console.log(req.body)

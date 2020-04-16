@@ -1,5 +1,6 @@
-const mongoose = require('mongoose')
+// const mongoose = require('mongoose')
 const User = require('./schemas/user')
+const News = require('./schemas/news')
 
 module.exports.getUserByName = async (userName) => {
   return User.findOne({ userName })
@@ -33,7 +34,18 @@ module.exports.createUser = async (data) => {
 module.exports.updateUser = () => {}
 module.exports.deleteUser = () => {}
 
-module.exports.getNews = async () => {}
-module.exports.createNews = () => {}
+module.exports.getNews = async () => {
+  return News.find()
+}
+module.exports.createNews = async (data, user) => {
+  const { title, text } = data
+  const news = new News({
+    title,
+    text,
+    created_at: new Date(),
+    user,
+  })
+  return await news.save()
+}
 module.exports.updateNews = () => {}
 module.exports.deleteNews = () => {}
