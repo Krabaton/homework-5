@@ -32,7 +32,7 @@ module.exports.createUser = async (data) => {
   console.log(user)
   return user
 }
-module.exports.updateUser = async (id, data) => {
+module.exports.updateUserPermission = async (id, data) => {
   return await User.findByIdAndUpdate(
     { _id: id },
     { $set: data },
@@ -41,6 +41,14 @@ module.exports.updateUser = async (id, data) => {
 }
 module.exports.deleteUser = async (id) => {
   return User.findByIdAndRemove({ _id: id })
+}
+
+module.exports.updateUserProfile = async (id, data) => {
+  return await User.findByIdAndUpdate(
+    { _id: id },
+    { $set: data },
+    { new: true },
+  )
 }
 
 module.exports.getNews = async () => {

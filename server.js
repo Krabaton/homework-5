@@ -8,6 +8,7 @@ require('./models/connection')
 
 // parse application/json
 app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
 
 app.use(function (_, res, next) {
   res.header('Access-Control-Allow-Origin', '*')
@@ -40,22 +41,37 @@ app.use((err, _, res, __) => {
 const PORT = process.env.PORT || 3000
 
 server.listen(PORT, function () {
+  console.log('Environment', process.env.NODE_ENV)
   console.log(`Server running. Use our API on port: ${PORT}`)
 })
 
+const connectedUsers = {}
+
 io.on('connection', (socket) => {
+  const socketId = socket.id
   socket.on('users:connect', function (data) {
-    console.log(data)
+    // { userId: '5e9483d6d96b341ba80bc28e', username: 'krab' }
+    const user = { ...data, socketId, activeRoom: null }
+    connectedUsers[socketId] = user
+    socket.emit('users:list', Object.values(connectedUsers))
+    socket.broadcast.emit('users:add', user)
   })
   socket.on('message:add', function (data) {
+    // {senderId: '5e9483d6d96b341ba80bc28e', recipientId: '5e9483d6d96b341ba80bc28e', text: 'Hi'}
+    console.log('message:add')
     console.log(data)
+    socket.emit('message:add', data)
+    socket.broadcast.to(data.roomId).emit('message:add', data)
   })
   socket.on('message:history', function (data) {
+    // {recipientId: '5e9483d6d96b341ba80bc28e', userId: '5e9483d6d96b341ba80bc28e'}
+    console.log('message:history')
     console.log(data)
   })
   socket.on('disconnect', function (data) {
-    console.log(data)
+    delete connectedUsers[socketId]
+    socket.broadcast.emit('users:leave', socketId)
   })
 })
 
-module.exports = app
+module.exports = { app: app, server: server }

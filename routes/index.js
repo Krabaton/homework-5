@@ -75,16 +75,14 @@ router
       ...helper.serializeUser(user),
     })
   })
-  .patch('/profile', auth, (req, res) => {
+  .patch('/profile', auth, async (req, res) => {
     console.log(req.body)
-    const body = {
-      firstName: 'Yura',
-      middleName: 'Kuchma',
-      surName: 'Vladimirovich',
-      oldPassword: '1223456',
-      newPassword: '123456',
-      avatar: 0x12ad,
-    }
+    // TODO:
+    const token = req.headers['authorization']
+    const user = await tokens.getUserByToken(token, db, secret.secret)
+    res.json({
+      ...helper.serializeUser(user),
+    })
   })
 
 router
@@ -94,7 +92,7 @@ router
   })
   .patch('/users/:id/permission', auth, async (req, res, next) => {
     try {
-      const user = await db.updateUser(req.params.id, req.body)
+      const user = await db.updateUserPermission(req.params.id, req.body)
       res.json({
         ...helper.serializeUser(user),
       })
