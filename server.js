@@ -4,7 +4,6 @@ const app = express()
 const http = require('http')
 const server = http.createServer(app)
 const io = require('socket.io').listen(server)
-const fs = require('fs')
 
 require('./models/connection')
 
@@ -94,6 +93,9 @@ io.on('connection', (socket) => {
 const addMessageToHistory = (senderId, recipientId, data) => {
   if (historyMessage[senderId]) {
     if (historyMessage[senderId][recipientId]) {
+      if (historyMessage[senderId][recipientId].length > 10) {
+        historyMessage[senderId][recipientId].shift()
+      }
       historyMessage[senderId][recipientId].push(data)
     } else {
       historyMessage[senderId][recipientId] = []
