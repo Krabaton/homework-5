@@ -37,6 +37,7 @@
   "scripts": {
     "start-backend": "cross-env NODE_ENV=development nodemon ./server.js",
     "start": "cross-env NODE_ENV=production node server.js",
+    "prestart": "npm run build-frontend",
     "start-frontend": "react-scripts start",
     "build-frontend": "react-scripts build",
     "test-frontend": "react-scripts test",

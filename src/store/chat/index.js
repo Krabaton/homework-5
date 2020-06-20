@@ -72,8 +72,9 @@ export default combineReducers({
 
 export const connectSocket = () => (dispatch, getState) => {
   const userProfile = userProfileSelector(getState())
-
-  socket = socketIO('https://homework-loft.herokuapp.com/')
+  const urlSocket = '/' // 'http://localhost:3000/'
+  // const urlSocket = 'https://homework-loft.herokuapp.com/'
+  socket = socketIO(urlSocket)
 
   socket.emit('users:connect', {
     userId: userProfile.id,

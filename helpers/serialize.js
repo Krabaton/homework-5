@@ -1,3 +1,9 @@
+/**
+ *
+ *
+ * @param {*} user
+ * @returns
+ */
 module.exports.serializeUser = (user) => {
   return {
     firstName: user.firstName,

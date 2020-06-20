@@ -23,7 +23,7 @@ router.post('/registration', async (req, res) => {
   const { username } = req.body
   const user = await db.getUserByName(username)
   if (user) {
-    return res.status(400).json({})
+    return res.status(400).json({}) // TODO:
   }
   try {
     const newUser = await db.createUser(req.body)
@@ -47,7 +47,7 @@ router.post('/login', async (req, res, next) => {
         return next(err)
       }
       if (!user) {
-        return res.status(400).json({})
+        return res.status(400).json({}) // TODO:
       }
       if (user) {
         const token = await tokens.createTokens(user, secret.secret)
@@ -63,6 +63,7 @@ router.post('/login', async (req, res, next) => {
 
 router.post('/refresh-token', async (req, res) => {
   const refreshToken = req.headers['authorization']
+  // TODO: compare token from DB
   const data = await tokens.refreshTokens(refreshToken, db, secret.secret)
   res.json({ ...data })
 })
@@ -102,7 +103,7 @@ router
   })
   .delete('/users/:id', auth, async (req, res) => {
     await db.deleteUser(req.params.id)
-    res.json({})
+    res.status(204).json({})
   })
 
 router

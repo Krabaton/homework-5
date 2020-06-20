@@ -10,7 +10,7 @@ const Strategy = passportJWT.Strategy
 const params = {
   secretOrKey: secret,
   jwtFromRequest: function (req) {
-    var token = null
+    let token = null
     if (req && req.headers) {
       token = req.headers['authorization']
     }
