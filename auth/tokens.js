@@ -12,7 +12,7 @@ const createTokens = async (user) => {
     },
     SECRET,
     {
-      expiresIn: '10h',
+      expiresIn: '8h',
     },
   )
 
@@ -25,6 +25,7 @@ const createTokens = async (user) => {
       expiresIn: '7d',
     },
   )
+  // TODO: save refreshToken to DB
   const verifyToken = jwt.verify(createToken, SECRET)
   const verifyRefresh = jwt.verify(createRefreshToken, SECRET)
 
@@ -37,8 +38,9 @@ const createTokens = async (user) => {
 }
 
 const refreshTokens = async (refreshToken) => {
-  const user = await getUserByToken(refreshToken, models, SECRET)
+  const user = await getUserByToken(refreshToken)
   if (user) {
+    // (user && user.refreshToken === refreshToken)
     return {
       ...helper.serializeUser(user),
       ...(await createTokens(user, SECRET)),
@@ -47,6 +49,7 @@ const refreshTokens = async (refreshToken) => {
     return {}
   }
 }
+
 const getUserByToken = async (token) => {
   let userId = -1
   try {
@@ -57,6 +60,7 @@ const getUserByToken = async (token) => {
   const user = await models.getUserById(userId)
   return user
 }
+
 module.exports = {
   createTokens,
   refreshTokens,

@@ -12,6 +12,7 @@ module.exports.getUserById = async (id) => {
 module.exports.getUsers = async () => {
   return User.find()
 }
+
 module.exports.createUser = async (data) => {
   const { username, surName, firstName, middleName, password } = data
   const newUser = new User({
@@ -32,6 +33,7 @@ module.exports.createUser = async (data) => {
   console.log(user)
   return user
 }
+
 module.exports.updateUserPermission = async (id, data) => {
   return await User.findByIdAndUpdate(
     { _id: id },

@@ -8,13 +8,12 @@ const helper = require('../helpers/serialize')
 const auth = (req, res, next) => {
   passport.authenticate('jwt', { session: false }, (err, user, info) => {
     if (!user || err) {
-      res.status(401).json({
+      return res.status(401).json({
         code: 401,
         message: 'Unauthorized',
       })
-    } else {
-      next()
     }
+    next()
   })(req, res, next)
 }
 
@@ -22,7 +21,7 @@ router.post('/registration', async (req, res) => {
   const { username } = req.body
   const user = await db.getUserByName(username)
   if (user) {
-    return res.status(400).json({}) // TODO:
+    return res.status(409).json({}) // TODO:
   }
   try {
     const newUser = await db.createUser(req.body)
@@ -76,6 +75,7 @@ router
     })
   })
   .patch('/profile', auth, async (req, res) => {
+    console.log(`PATH: req.body: `)
     console.log(req.body)
     // TODO:
     const token = req.headers['authorization']
@@ -120,7 +120,7 @@ router
       const user = await tokens.getUserByToken(token)
       await db.createNews(req.body, user)
       const news = await db.getNews()
-      res.json(news)
+      res.status(201).json(news)
     } catch (e) {
       next(e)
     }

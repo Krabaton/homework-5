@@ -10,7 +10,7 @@ const params = {
   jwtFromRequest: function (req) {
     let token = null
     if (req && req.headers) {
-      token = req.headers['authorization']
+      token = req.headers['authorization'] // req.get('authorization')
     }
     return token
   },
