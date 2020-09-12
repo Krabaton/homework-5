@@ -1,14 +1,12 @@
 const passport = require('passport')
 const passportJWT = require('passport-jwt')
 const LocalStrategy = require('passport-local').Strategy
-// const mongoose = require('mongoose')
-
 const User = require('../models/schemas/user')
-const secret = require('./config.json').secret
+require('dotenv').config()
 
 const Strategy = passportJWT.Strategy
 const params = {
-  secretOrKey: secret,
+  secretOrKey: process.env.SECRET,
   jwtFromRequest: function (req) {
     let token = null
     if (req && req.headers) {

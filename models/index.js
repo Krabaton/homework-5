@@ -60,7 +60,6 @@ module.exports.createNews = async (data, user) => {
   const news = new News({
     title,
     text,
-    created_at: new Date(),
     user,
   })
   return await news.save()

@@ -14,7 +14,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "lodash.get": "^4.4.2",
-    "mongoose": "^5.9.7",
+    "mongoose": "^5.10.5",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
@@ -35,12 +35,12 @@
     "socket.io-client": "^2.2.0"
   },
   "scripts": {
-    "start-backend": "cross-env NODE_ENV=development nodemon ./server.js",
+    "start:backend": "cross-env NODE_ENV=development nodemon ./server.js",
     "start": "cross-env NODE_ENV=production node server.js",
-    "start-frontend": "react-scripts start",
-    "build-frontend": "react-scripts build",
-    "test-frontend": "react-scripts test",
-    "eject-frontend": "react-scripts eject"
+    "start:frontend": "react-scripts start",
+    "build:frontend": "react-scripts build",
+    "test:frontend": "react-scripts test",
+    "eject:frontend": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"

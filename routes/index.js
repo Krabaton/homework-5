@@ -1,7 +1,6 @@
 const express = require('express')
 const router = express.Router()
 const tokens = require('../auth/tokens')
-const secret = require('../auth/config.json')
 const passport = require('passport')
 const db = require('../models')
 const helper = require('../helpers/serialize')
@@ -27,7 +26,7 @@ router.post('/registration', async (req, res) => {
   }
   try {
     const newUser = await db.createUser(req.body)
-    const token = await tokens.createTokens(newUser, secret.secret)
+    const token = await tokens.createTokens(newUser)
     res.json({
       ...helper.serializeUser(newUser),
       ...token,
@@ -50,7 +49,7 @@ router.post('/login', async (req, res, next) => {
         return res.status(400).json({}) // TODO:
       }
       if (user) {
-        const token = await tokens.createTokens(user, secret.secret)
+        const token = await tokens.createTokens(user)
         console.log(token)
         res.json({
           ...helper.serializeUser(user),
@@ -64,14 +63,14 @@ router.post('/login', async (req, res, next) => {
 router.post('/refresh-token', async (req, res) => {
   const refreshToken = req.headers['authorization']
   // TODO: compare token from DB
-  const data = await tokens.refreshTokens(refreshToken, db, secret.secret)
+  const data = await tokens.refreshTokens(refreshToken)
   res.json({ ...data })
 })
 
 router
   .get('/profile', auth, async (req, res) => {
     const token = req.headers['authorization']
-    const user = await tokens.getUserByToken(token, db, secret.secret)
+    const user = await tokens.getUserByToken(token)
     res.json({
       ...helper.serializeUser(user),
     })
@@ -80,7 +79,7 @@ router
     console.log(req.body)
     // TODO:
     const token = req.headers['authorization']
-    const user = await tokens.getUserByToken(token, db, secret.secret)
+    const user = await tokens.getUserByToken(token)
     res.json({
       ...helper.serializeUser(user),
     })
@@ -118,8 +117,8 @@ router
   .post('/news', auth, async (req, res, next) => {
     try {
       const token = req.headers['authorization']
-      const user = await tokens.getUserByToken(token, db, secret.secret)
-      await db.createNews(req.body, helper.serializeUser(user))
+      const user = await tokens.getUserByToken(token)
+      await db.createNews(req.body, user)
       const news = await db.getNews()
       res.json(news)
     } catch (e) {

@@ -1,33 +1,24 @@
 const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
-const newsSchema = new Schema({
-  created_at: {
-    type: Date,
-    get: (createdAt) => {
-      return createdAt.toLocaleDateString('ru-RU', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
+const newsSchema = new Schema(
+  {
+    text: {
+      type: String,
+    },
+    title: {
+      type: String,
+    },
+    user: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: 'user',
     },
   },
-  text: {
-    type: String,
+  {
+    versionKey: false,
+    timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' },
   },
-  title: {
-    type: String,
-  },
-  user: {
-    id: String,
-    firstName: String,
-    middleName: String,
-    surName: String,
-    image: String,
-    userName: String,
-  },
-})
+)
 
 const News = mongoose.model('new', newsSchema)
 

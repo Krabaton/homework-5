@@ -1,15 +1,18 @@
 const jwt = require('jsonwebtoken')
 const _ = require('lodash')
 const helper = require('../helpers/serialize')
+const models = require('../models')
+require('dotenv').config()
+const SECRET = process.env.SECRET
 
-const createTokens = async (user, secret) => {
+const createTokens = async (user) => {
   const createToken = await jwt.sign(
     {
       user: _.pick(user, 'id'),
     },
-    secret,
+    SECRET,
     {
-      expiresIn: '10m',
+      expiresIn: '10h',
     },
   )
 
@@ -17,13 +20,13 @@ const createTokens = async (user, secret) => {
     {
       user: _.pick(user, 'id'),
     },
-    secret,
+    SECRET,
     {
       expiresIn: '7d',
     },
   )
-  const verifyToken = jwt.verify(createToken, secret)
-  const verifyRefresh = jwt.verify(createRefreshToken, secret)
+  const verifyToken = jwt.verify(createToken, SECRET)
+  const verifyRefresh = jwt.verify(createRefreshToken, SECRET)
 
   return {
     accessToken: createToken,
@@ -33,7 +36,7 @@ const createTokens = async (user, secret) => {
   }
 }
 
-const refreshTokens = async (refreshToken, models, SECRET) => {
+const refreshTokens = async (refreshToken) => {
   const user = await getUserByToken(refreshToken, models, SECRET)
   if (user) {
     return {
@@ -44,7 +47,7 @@ const refreshTokens = async (refreshToken, models, SECRET) => {
     return {}
   }
 }
-const getUserByToken = async (token, models, SECRET) => {
+const getUserByToken = async (token) => {
   let userId = -1
   try {
     userId = jwt.verify(token, SECRET).user.id
