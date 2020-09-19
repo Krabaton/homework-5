@@ -13,6 +13,7 @@ const auth = (req, res, next) => {
         message: 'Unauthorized',
       })
     }
+    // TODO: check IP user
     next()
   })(req, res, next)
 }

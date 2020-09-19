@@ -67,13 +67,15 @@ io.on('connection', (socket) => {
     socket.emit('message:add', data)
     socket.broadcast.to(data.roomId).emit('message:add', data)
     addMessageToHistory(senderId, recipientId, data)
-    addMessageToHistory(recipientId, senderId, data)
+    if (senderId !== recipientId) {
+      addMessageToHistory(recipientId, senderId, data)
+    }
   })
   socket.on('message:history', function (data) {
     // {recipientId: '5e9483d6d96b341ba80bc28e', userId: '5e9483d6d96b341ba80bc28e'}
     console.log('message:history')
     console.log(data)
-    console.log(historyMessage)
+    // console.log(historyMessage)
     if (
       historyMessage[data.userId] &&
       historyMessage[data.userId][data.recipientId]
@@ -82,7 +84,7 @@ io.on('connection', (socket) => {
         'message:history',
         historyMessage[data.userId][data.recipientId],
       )
-      console.log(historyMessage[data.userId][data.recipientId])
+      // console.log(historyMessage[data.userId][data.recipientId])
     }
   })
   socket.on('disconnect', function (data) {
