@@ -26,8 +26,8 @@ const createTokens = async (user) => {
     },
   )
   // TODO: save refreshToken to DB
-  const verifyToken = jwt.verify(createToken, SECRET)
-  const verifyRefresh = jwt.verify(createRefreshToken, SECRET)
+  const verifyToken = jwt.decode(createToken, SECRET)
+  const verifyRefresh = jwt.decode(createRefreshToken, SECRET)
 
   return {
     accessToken: createToken,

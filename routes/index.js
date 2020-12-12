@@ -14,6 +14,7 @@ const auth = (req, res, next) => {
       })
     }
     // TODO: check IP user
+    req.user = user
     next()
   })(req, res, next)
 }
@@ -69,8 +70,7 @@ router.post('/refresh-token', async (req, res) => {
 
 router
   .get('/profile', auth, async (req, res) => {
-    const token = req.headers['authorization']
-    const user = await tokens.getUserByToken(token)
+    const user = req.user
     res.json({
       ...helper.serializeUser(user),
     })
@@ -79,8 +79,7 @@ router
     console.log(`PATH: req.body: `)
     console.log(req.body)
     // TODO:
-    const token = req.headers['authorization']
-    const user = await tokens.getUserByToken(token)
+    const user = req.user
     res.json({
       ...helper.serializeUser(user),
     })
@@ -88,20 +87,41 @@ router
 
 router
   .get('/users', auth, async (req, res) => {
+    const user = req.user
+    if (!user.permission.settings.R) {
+      return res.status(403).json({
+        code: 403,
+        message: 'Forbidden',
+      })
+    }
     const users = await db.getUsers()
     res.json(users.map((user) => helper.serializeUser(user)))
   })
   .patch('/users/:id/permission', auth, async (req, res, next) => {
     try {
-      const user = await db.updateUserPermission(req.params.id, req.body)
+      const user = req.user
+      if (!user.permission.settings.U) {
+        return res.status(403).json({
+          code: 403,
+          message: 'Forbidden',
+        })
+      }
+      const updatedUser = await db.updateUserPermission(req.params.id, req.body)
       res.json({
-        ...helper.serializeUser(user),
+        ...helper.serializeUser(updatedUser),
       })
     } catch (e) {
       next(e)
     }
   })
   .delete('/users/:id', auth, async (req, res) => {
+    const user = req.user
+    if (!user.permission.settings.D) {
+      return res.status(403).json({
+        code: 403,
+        message: 'Forbidden',
+      })
+    }
     await db.deleteUser(req.params.id)
     res.status(204).json({})
   })
@@ -109,6 +129,13 @@ router
 router
   .get('/news', auth, async (req, res, next) => {
     try {
+      const user = req.user
+      if (!user.permission.news.R) {
+        return res.status(403).json({
+          code: 403,
+          message: 'Forbidden',
+        })
+      }
       const news = await db.getNews()
       return res.json(news)
     } catch (e) {
@@ -117,8 +144,15 @@ router
   })
   .post('/news', auth, async (req, res, next) => {
     try {
-      const token = req.headers['authorization']
-      const user = await tokens.getUserByToken(token)
+      const user = req.user
+
+      if (!user.permission.news.C) {
+        return res.status(403).json({
+          code: 403,
+          message: 'Forbidden',
+        })
+      }
+
       await db.createNews(req.body, user)
       const news = await db.getNews()
       res.status(201).json(news)
@@ -128,6 +162,16 @@ router
   })
   .patch('/news/:id', auth, async (req, res, next) => {
     try {
+      const user = req.user
+      console.log('🚀 ~ file: index.js ~ line 130 ~ .patch ~ user', user)
+
+      if (!user.permission.news.U) {
+        return res.status(403).json({
+          code: 403,
+          message: 'Forbidden',
+        })
+      }
+
       await db.updateNews(req.params.id, req.body)
       const news = await db.getNews()
       res.json(news)
@@ -137,6 +181,13 @@ router
   })
   .delete('/news/:id', auth, async (req, res, next) => {
     try {
+      const user = req.user
+      if (!user.permission.news.D) {
+        return res.status(403).json({
+          code: 403,
+          message: 'Forbidden',
+        })
+      }
       await db.deleteNews(req.params.id)
       const news = await db.getNews()
       res.json(news)

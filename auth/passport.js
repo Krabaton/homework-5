@@ -41,7 +41,7 @@ passport.use(
         if (!user) {
           return done(new Error('User not found'))
         }
-        return done(null, { user: { id: user.id } })
+        return done(null, user)
       })
       .catch((err) => done(err))
   }),
